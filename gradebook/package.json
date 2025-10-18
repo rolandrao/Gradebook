@@ -1,0 +1,81 @@
+{
+  "name": "gradebook",
+  "version": "1.0.0",
+  "description": "A local gradebook tracking app for Windows",
+  "author": "Roalnd Rao rolandrao@gmail.com",
+  "main": "main.js",
+  "private": true,
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "electron-dev": "concurrently \"npm run start\" \"wait-on http://localhost:3000 && electron .\"",
+    "electron-pack": "npm run build && electron-builder --win --x64"
+  },
+  "build": {
+    "appId": "com.gradebook.app",
+    "productName": "Gradebook",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "build/**/*",
+      "main.js",
+      "preload.js",
+      "db.js",
+      "package.json",
+      "src/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "db/",
+        "to": "db/",
+        "filter": ["**/*"]
+      }
+    ],
+    "extraMetadata": {
+      "main": "main.js"
+    },
+    "npmRebuild": false,
+    "asar": true,
+    "win": {
+      "target": "nsis",
+      "icon": "public/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Gradebook"
+    }
+  },
+  "dependencies": {
+    "@headlessui/react": "^2.2.9",
+    "better-sqlite3": "^9.4.0",
+    "bootstrap": "^5.3.8",
+    "react": "^18.0.0",
+    "react-bootstrap": "^2.10.10",
+    "react-dom": "^18.0.0",
+    "react-router-dom": "^6.4.0",
+    "react-scripts": "5.0.1"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "cross-env": "^7.0.3",
+    "electron": "^29.0.0",
+    "electron-builder": "^26.0.12",
+    "wait-on": "^7.2.0"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}

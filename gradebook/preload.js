@@ -1,0 +1,28 @@
+const { contextBridge, ipcRenderer } = require("electron");
+
+contextBridge.exposeInMainWorld("api", {
+  getStudents: () => ipcRenderer.invoke("get-students"),
+  addStudent: (firstName, lastName) => ipcRenderer.invoke("add-student", firstName, lastName),
+  updateStudent: (id, firstName, lastName) => ipcRenderer.invoke("update-student", id, firstName, lastName),
+  deleteStudent: (id) => ipcRenderer.invoke("delete-student", id),
+  getSubjectID: (subjectName) => ipcRenderer.invoke("get-subject-id", subjectName),
+  getSubjects: () => ipcRenderer.invoke("get-subjects"),
+  addSubject: (name) => ipcRenderer.invoke("add-subject", name),
+  deleteSubject: (id) => ipcRenderer.invoke("delete-subject", id),
+  getUnits: (subjectID) => ipcRenderer.invoke("get-units", subjectID),
+  addUnit: (subjectID, name) => ipcRenderer.invoke("add-unit", subjectID, name),
+  getUnitsBySubject: (subjectID) => ipcRenderer.invoke("get-units-by-subject", subjectID),
+  getUnitAveragesBySubject: (subjectID) => ipcRenderer.invoke("get-unit-averages-by-subject", subjectID),
+  getCategories: (subjectID) => ipcRenderer.invoke("get-categories", subjectID),
+  addCategory: (subjectID, name) => ipcRenderer.invoke("add-category", subjectID, name),
+  getAssignmentsByCategory: (categoryID) => ipcRenderer.invoke("get-assignments-by-category", categoryID),
+  getAssignmentsBySubject: (subjectID) => ipcRenderer.invoke("get-assignments-by-subject", subjectID),
+  addAssignment: (subjectID, unitID, categoryID, title, maxScore, dueDate) => ipcRenderer.invoke("add-assignment", subjectID, unitID, categoryID, title, maxScore, dueDate),
+  updateAssignment: (assignmentID, subjectID, unitID, categoryID, title, maxScore, dueDate) => ipcRenderer.invoke("update-assignment", assignmentID, subjectID, unitID, categoryID, title, maxScore, dueDate),
+  deleteAssignment: (assignmentID) => ipcRenderer.invoke("delete-assignment", assignmentID),
+  getGrades: (assignmentID) => ipcRenderer.invoke("get-grades", assignmentID),
+  getGradesBySubject: (subjectID) => ipcRenderer.invoke("get-grades-by-subject", subjectID),
+  getWeightedAverageBySubject: (subjectID) => ipcRenderer.invoke("get-weighted-average-by-subject", subjectID),
+  updateGrade: (studentID, assignmentID, points) => ipcRenderer.invoke("update-grade", studentID, assignmentID, points),
+  addGrade: (assignmentID, studentID, score) => ipcRenderer.invoke("add-grade", assignmentID, studentID, score),
+});
