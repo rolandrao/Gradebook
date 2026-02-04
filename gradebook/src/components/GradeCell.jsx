@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Input } from "@/components/ui/input";
 
 export default function GradeCell({ 
@@ -8,7 +8,11 @@ export default function GradeCell({
     assignmentId, 
     onSave, 
     cellId, 
-    onKeyDown 
+    onKeyDown,
+    isActiveRow, 
+    isActiveCol, 
+    onFocus,
+    onBlur // NEW: Accept onBlur from parent
 }) {
     const [isEditing, setIsEditing] = useState(false);
     const [localScore, setLocalScore] = useState(score ?? '');
@@ -21,15 +25,17 @@ export default function GradeCell({
         ? Math.round((parseFloat(localScore) / maxPoints) * 100) 
         : null;
 
-    const handleBlur = () => {
+    // Handle saving and losing focus from the INPUT
+    const handleInputBlur = () => {
         setIsEditing(false);
         if (localScore != (score ?? '')) {
             onSave(studentId, assignmentId, localScore);
         }
+        // Tell parent we are done interacting
+        if (onBlur) onBlur();
     };
 
     // --- KEYBOARD LOGIC ---
-    
     const handleContainerKeyDown = (e) => {
         if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
             onKeyDown(e); 
@@ -57,12 +63,19 @@ export default function GradeCell({
     const handleInputKeyDown = (e) => {
         if (e.key === 'Enter') {
             e.preventDefault();
-            handleBlur(); 
+            handleInputBlur(); 
         } else if (['ArrowUp', 'ArrowDown'].includes(e.key)) {
             e.preventDefault();
-            handleBlur();
-            onKeyDown(e); 
+            handleInputBlur(); // Save first
+            onKeyDown(e); // Then move
         }
+    };
+
+    // Highlight Logic
+    const getBackgroundClass = () => {
+        if (isActiveRow && isActiveCol) return "bg-blue-100 dark:bg-blue-900/30"; 
+        if (isActiveRow || isActiveCol) return "bg-blue-50/50 dark:bg-blue-900/10"; 
+        return "hover:bg-muted/50"; 
     };
 
     // --- RENDER ---
@@ -73,12 +86,11 @@ export default function GradeCell({
                 id={cellId} 
                 type="number" 
                 autoFocus
-                // EDIT MODE STYLES: White background, strong blue border, large text
                 className="w-full h-full rounded-none border-2 border-blue-600 bg-white dark:bg-black text-center text-lg font-bold focus-visible:ring-0 m-0 p-0 shadow-lg z-50 relative"
                 placeholder="-"
                 value={localScore}
                 onChange={(e) => setLocalScore(e.target.value)}
-                onBlur={handleBlur}
+                onBlur={handleInputBlur}
                 onKeyDown={handleInputKeyDown}
             />
         );
@@ -88,19 +100,22 @@ export default function GradeCell({
         <div 
             id={cellId}
             tabIndex={0}
-            // VIEW MODE STYLES:
-            // 1. focus:ring-inset -> Keeps border inside so it doesn't get cut off
-            // 2. focus:ring-2 focus:ring-blue-600 -> High contrast blue border
-            // 3. focus:bg-blue-50 -> Light blue background when selected
-            className="w-full h-14 flex items-center justify-center cursor-pointer transition-colors outline-none 
-                       hover:bg-muted/50 
+            className={`w-full h-14 flex items-center justify-center cursor-pointer transition-colors outline-none 
                        focus:ring-2 focus:ring-inset focus:ring-blue-600 
-                       focus:bg-blue-50 dark:focus:bg-blue-900/20"
+                       ${getBackgroundClass()}`}
             onClick={() => setIsEditing(true)}
             onKeyDown={handleContainerKeyDown}
-            onFocus={(e) => {
-                e.target.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+            // Trigger focus state
+            onFocus={() => {
+                if (onFocus) onFocus();
+                const el = document.getElementById(cellId);
+                if (el) el.scrollIntoView({ block: 'nearest', inline: 'nearest' });
             }}
+            // Clear focus state on blur
+            onBlur={() => {
+                if (onBlur) onBlur();
+            }}
+            // REMOVED onMouseEnter
         >
             {localScore !== '' && localScore !== null ? (
                 <div className="flex flex-col items-center leading-tight pointer-events-none">

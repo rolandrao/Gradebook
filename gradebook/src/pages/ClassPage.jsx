@@ -20,6 +20,10 @@ export default function ClassPage() {
     const [selectedTrimester, setSelectedTrimester] = useState("1");
     const [expandedStudentId, setExpandedStudentId] = useState(null);
 
+    // HIGHLIGHT STATE
+    const [activeRow, setActiveRow] = useState(null);
+    const [activeCol, setActiveCol] = useState(null);
+
     // Modal States
     const [editingAssignment, setEditingAssignment] = useState(null);
     const [isEditOpen, setIsEditOpen] = useState(false);
@@ -63,6 +67,21 @@ export default function ClassPage() {
         if (nextCell) nextCell.focus();
     };
 
+    // Focus Handlers
+    const handleCellFocus = (rowIndex, colIndex) => {
+        setActiveRow(rowIndex);
+        setActiveCol(colIndex);
+    };
+
+    // Clear highlights when focus leaves a cell
+    const handleCellBlur = () => {
+        // We use a small timeout or rely on the next focus event clearing this
+        // But for simply clearing when clicking outside, setting to null works.
+        // If tabbing to next cell, the next Focus event will overwrite this almost instantly.
+        setActiveRow(null);
+        setActiveCol(null);
+    };
+
     if (loading) return <div className="p-8"><Skeleton className="h-12 w-full mb-4"/><Skeleton className="h-64 w-full"/></div>;
 
     return (
@@ -81,8 +100,8 @@ export default function ClassPage() {
                 <div className="flex flex-col md:flex-row gap-2">
                     {viewMode === 'assignments' && (
                         <Select value={selectedTrimester} onValueChange={setSelectedTrimester}>
-                            <SelectTrigger className="w-[140px]"><SelectValue /></SelectTrigger>
-                            <SelectContent>
+                            <SelectTrigger className="w-[140px] bg-background"><SelectValue /></SelectTrigger>
+                            <SelectContent className="bg-white dark:bg-zinc-950">
                                 <SelectItem value="1">Trimester 1</SelectItem>
                                 <SelectItem value="2">Trimester 2</SelectItem>
                                 <SelectItem value="3">Trimester 3</SelectItem>
@@ -120,15 +139,20 @@ export default function ClassPage() {
             {/* DESKTOP TABLE */}
             <div className="hidden md:flex flex-1 min-h-0 rounded-md border border-border bg-card overflow-hidden flex-col shadow-sm relative">
                 <div className="overflow-auto flex-1 w-full h-full relative">
-                    
+                    {/* Removed onMouseLeave here */}
                     <table className="w-full text-sm text-left border-collapse min-w-max">
                         <thead className="text-xs uppercase bg-white dark:bg-zinc-950 text-muted-foreground sticky top-0 z-50 shadow-sm">
                             <tr className="border-b border-border">
                                 <th className="w-[200px] sticky left-0 top-0 z-[60] bg-white dark:bg-zinc-950 border-r border-border border-b shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] px-4 py-3 font-bold text-foreground">
                                     Student
                                 </th>
-                                {viewMode === 'assignments' ? visibleAssignments.map(a => (
-                                    <th key={a.id} className="min-w-[140px] sticky top-0 z-50 text-center cursor-pointer hover:bg-muted bg-white dark:bg-zinc-950 border-b border-r border-border/50 p-2 font-normal" onClick={() => { setEditingAssignment(a); setIsEditOpen(true); }}>
+                                {viewMode === 'assignments' ? visibleAssignments.map((a, aIndex) => (
+                                    <th 
+                                        key={a.id} 
+                                        className={`min-w-[140px] sticky top-0 z-50 text-center cursor-pointer hover:bg-muted border-b border-r border-border/50 p-2 font-normal transition-colors
+                                            ${activeCol === aIndex ? 'bg-blue-50/50 dark:bg-blue-900/10' : 'bg-white dark:bg-zinc-950'}`} 
+                                        onClick={() => { setEditingAssignment(a); setIsEditOpen(true); }}
+                                    >
                                         <div className="flex flex-col items-center justify-center h-full">
                                             {a.assigned_date && <span className="text-[10px] bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-1 rounded mb-1 whitespace-nowrap normal-case">{formatDateForDisplay(a.assigned_date)}</span>}
                                             <span className="font-medium text-xs leading-tight line-clamp-2 text-foreground normal-case">{a.name}</span>
@@ -146,7 +170,8 @@ export default function ClassPage() {
                         <tbody>
                             {students.map((student, sIndex) => (
                                 <tr key={student.id} className="hover:bg-muted/30 border-b border-border last:border-0">
-                                    <td className="sticky left-0 z-40 bg-white dark:bg-zinc-950 border-r border-border font-medium shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] px-4 py-3 text-foreground">
+                                    <td className={`sticky left-0 z-40 border-r border-border font-medium shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] px-4 py-3 text-foreground transition-colors 
+                                        ${activeRow === sIndex ? 'bg-blue-50/50 dark:bg-blue-900/10' : 'bg-white dark:bg-zinc-950'}`}>
                                         <div className="truncate w-[180px]">{student.last_name}, {student.first_name}</div>
                                     </td>
                                     
@@ -159,6 +184,10 @@ export default function ClassPage() {
                                                 studentId={student.id} assignmentId={a.id}
                                                 onSave={updateGrade}
                                                 onKeyDown={(e) => handleKeyDown(e, sIndex, aIndex)}
+                                                isActiveRow={activeRow === sIndex}
+                                                isActiveCol={activeCol === aIndex}
+                                                onFocus={() => handleCellFocus(sIndex, aIndex)}
+                                                onBlur={handleCellBlur} // Added Blur Handler
                                             />
                                         </td>
                                     )) : modules.map(m => (
@@ -175,17 +204,13 @@ export default function ClassPage() {
 
                             {/* --- CLASS AVERAGE ROW --- */}
                             <tr className="bg-gray-100 dark:bg-zinc-800 border-t-2 border-border font-bold">
-                                
-                                {/* Label Cell - SOLID BACKGROUND */}
                                 <td className="sticky left-0 z-40 bg-gray-100 dark:bg-zinc-800 border-r border-border font-bold shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] px-4 py-3 text-foreground">
                                     Class Average
                                 </td>
-
-                                {/* Data Cells */}
-                                {viewMode === 'assignments' ? visibleAssignments.map(a => {
+                                {viewMode === 'assignments' ? visibleAssignments.map((a, aIndex) => {
                                     const avg = getClassAssignmentAverage(a.id, a.max_points);
                                     return (
-                                        <td key={a.id} className="text-center border-r border-border/50 py-3">
+                                        <td key={a.id} className={`text-center border-r border-border/50 py-3 transition-colors ${activeCol === aIndex ? 'bg-blue-100/50 dark:bg-blue-900/20' : ''}`}>
                                             <span className={`${getScoreColor(avg)} text-white rounded px-2 py-1 text-xs`}>
                                                 {avg !== '-' ? `${avg}%` : '-'}
                                             </span>
@@ -201,8 +226,6 @@ export default function ClassPage() {
                                         </td>
                                     );
                                 })}
-
-                                {/* Bottom Right Cell - SOLID BACKGROUND */}
                                 <td className="sticky right-0 z-40 bg-gray-100 dark:bg-zinc-800 border-l border-border text-center shadow-[-2px_0_5px_-2px_rgba(0,0,0,0.1)] px-4 py-3">
                                     -
                                 </td>

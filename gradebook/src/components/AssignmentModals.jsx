@@ -1,6 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { 
+    AlertDialog, 
+    AlertDialogAction, 
+    AlertDialogCancel, 
+    AlertDialogContent, 
+    AlertDialogDescription, 
+    AlertDialogFooter, 
+    AlertDialogHeader, 
+    AlertDialogTitle 
+} from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -13,7 +22,6 @@ export default function AssignmentModals({
     isEditOpen, setIsEditOpen, editingAssignment, onUpdate, onDelete,
     isDeleteAlertOpen, setIsDeleteAlertOpen
 }) {
-    // Local form state
     const [formTrimester, setFormTrimester] = useState("1");
     const [formModule, setFormModule] = useState("");
     const [formCategory, setFormCategory] = useState("");
@@ -87,12 +95,12 @@ export default function AssignmentModals({
                 </DialogContent>
             </Dialog>
 
-            {/* DELETE ALERT */}
+            {/* DELETE ALERT - FIXED COMPONENTS HERE */}
             <AlertDialog open={isDeleteAlertOpen} onOpenChange={setIsDeleteAlertOpen}>
                 <AlertDialogContent className="bg-white dark:bg-zinc-950">
                     <AlertDialogHeader>
-                        <DialogTitle>Are you absolutely sure?</DialogTitle>
-                        <DialogDescription>This will permanently delete the assignment and all grades.</DialogDescription>
+                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                        <AlertDialogDescription>This will permanently delete the assignment and all grades.</AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
@@ -121,7 +129,6 @@ function AssignmentForm({ onSubmit, initialData = {}, modules, categories, trime
                 <Input name="name" defaultValue={initialData.name} required className="col-span-3" />
             </div>
             
-            {/* DATE FIELD */}
             <div className="grid grid-cols-4 items-center gap-4">
                 <Label className="text-right">Date</Label>
                 <Input name="assigned_date" type="date" defaultValue={formatDate(initialData.assigned_date)} className="col-span-3" />
@@ -137,7 +144,6 @@ function AssignmentForm({ onSubmit, initialData = {}, modules, categories, trime
                 <div className="col-span-3">
                     <Select value={trimester} onValueChange={setTrimester}>
                         <SelectTrigger className="bg-background"><SelectValue /></SelectTrigger>
-                        {/* Added bg-white to ensure it is solid */}
                         <SelectContent className="bg-white dark:bg-zinc-950">
                             <SelectItem value="1">Trimester 1</SelectItem>
                             <SelectItem value="2">Trimester 2</SelectItem>
@@ -152,7 +158,6 @@ function AssignmentForm({ onSubmit, initialData = {}, modules, categories, trime
                 <div className="col-span-3">
                     <Select value={mod} onValueChange={setMod}>
                         <SelectTrigger className="bg-background"><SelectValue /></SelectTrigger>
-                        {/* Added bg-white to ensure it is solid */}
                         <SelectContent className="bg-white dark:bg-zinc-950">
                             {modules.map(m => <SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>)}
                         </SelectContent>
@@ -165,7 +170,6 @@ function AssignmentForm({ onSubmit, initialData = {}, modules, categories, trime
                 <div className="col-span-3">
                     <Select value={cat} onValueChange={setCat}>
                         <SelectTrigger className="bg-background"><SelectValue /></SelectTrigger>
-                        {/* Added bg-white to ensure it is solid */}
                         <SelectContent className="bg-white dark:bg-zinc-950">
                             {categories.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
                         </SelectContent>
